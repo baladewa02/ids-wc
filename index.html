@@ -24,214 +24,115 @@
     <ids-container role="main" padding="8" hidden>
       <ids-theme-switcher mode="light"></ids-theme-switcher>
 
-      <ids-header class="idscontainer idscontainer-default">
-        <ids-toolbar class="idscontainer idscontainer-default">
-          <ids-toolbar-section type="buttonset" align="end">
-            <!-- Toolbar buttons to force overflow -->
-            <ids-button id="button-1" text="Button 1"></ids-button>
-            <ids-button id="button-2" text="Button 2" disabled></ids-button>
-            <ids-button id="button-3" text="Button 3"></ids-button>
-            <ids-button id="button-4" text="Button 4"></ids-button>
-            <ids-button id="button-5" text="Button 5"></ids-button>
-            <ids-button id="button-6" text="Button 6"></ids-button>
-            <ids-button id="button-7" text="Button 7"></ids-button>
-            <ids-button id="button-8" text="Button 8"></ids-button>
-
-            <!-- Settings menu button with dynamic loading - WORKS when NOT in overflow -->
-            <ids-menu-button
-              id="settings-menu-button"
-              icon="settings"
-              appearance="tertiary"
-              menu="settings-popup"
-              dropdown-icon
-            >
-              <span>Settings (Dynamic)</span>
-            </ids-menu-button>
-            <ids-popup-menu
-              id="settings-popup"
-              target="#settings-menu-button"
-              trigger-type="click"
-            ></ids-popup-menu>
-
-            <!-- Menu button with static menu items - WORKS in overflow -->
-            <ids-menu-button
-              id="menu-button-1"
-              menu="menu-button-menu-1"
-              text="Static Menu"
-            ></ids-menu-button>
-            <ids-popup-menu id="menu-button-menu-1" target="#menu-button-1">
-              <ids-menu-group>
-                <ids-menu-item id="menu-item-1" value="1"
-                  >Menu Item 1</ids-menu-item
-                >
-                <ids-menu-item id="menu-item-2" value="2"
-                  >Menu Item 2</ids-menu-item
-                >
-                <ids-menu-item id="menu-item-3" value="3"
-                  >Menu Item 3</ids-menu-item
-                >
-              </ids-menu-group>
-            </ids-popup-menu>
-
-            <!-- Dynamic menu button - FAILS when in overflow -->
-            <ids-menu-button
-              id="dynamic-menu-button"
-              menu="dynamic-popup"
-              text="Dynamic Menu"
-            ></ids-menu-button>
-            <ids-popup-menu
-              id="dynamic-popup"
-              target="#dynamic-menu-button"
-              trigger-type="click"
-            ></ids-popup-menu>
-          </ids-toolbar-section>
-          <ids-toolbar-more-actions overflow></ids-toolbar-more-actions>
-        </ids-toolbar>
-      </ids-header>
-
-      <ids-splitter id="ids-splitter-1289" initial-pane="both">
-        <ids-splitter-pane id="left-pane" size="30%"></ids-splitter-pane>
-        <ids-splitter-pane id="right-pane" size="70%"> </ids-splitter-pane>
-      </ids-splitter>
+      <ids-layout-grid cols="1" gap="md" padding="md">
+        <ids-layout-grid-cell>
+        
+          <ids-list-view id="custom_list"
+          pagination="standalone"
+          page-size="10"
+          selectable="mixed"
+          suppress-deactivation="true"
+        >
+          <template>
+            <ids-text font-size="16" type="h2">${productName}</ids-text>
+            <ids-text font-size="12" type="span">Count: ${units}</ids-text>
+            <ids-text font-size="12" type="span">Price: $ ${unitPrice}</ids-text>
+            <ids-button class="action-btn" id="select">Select</ids-button>
+            <ids-button class="action-btn" id="close">Close</ids-button>
+          </template>
+        </ids-list-view>
+        </ids-layout-grid-cell>
+      </ids-layout-grid>
     </ids-container>
 
     <script type="module">
-      import menuSet1 from './src/menu.json';
-      import menuSet2 from './src/menu2.json';
-
       document.addEventListener('DOMContentLoaded', () => {
-        // Add click event listeners to static menu items
-        const items = [
-          { id: 'menu-item-1', text: 'item 1' },
-          { id: 'menu-item-2', text: 'item 2' },
-          { id: 'menu-item-3', text: 'item 3' },
-        ];
-        items.forEach((item) => {
-          const el = document.getElementById(item.id);
-          el.addEventListener('click', () => {
-            console.log(`Static menu clicked: ${item.text}`);
+        const listData = [{
+            "id":1,
+            "productId":"7439937961",
+            "productName":"Steampan Lid",
+            "inStock":true,
+            "units":"9",
+            "unitPrice":"23",
+            "color":"Green",
+            "disabled": true,
+            "escalated": "2"
+          },
+          {
+            "id":2,
+            "productId":"3672150959",
+            "productName":"Coconut - Creamed, Pure",
+            "inStock":true,
+            "units":"588",
+            "unitPrice":"18",
+            "color":"Yellow",
+            "disabled": true,
+            "escalated": "1"
+          },
+          {
+            "id":3,
+            "productId":"8233719404",
+            "productName":"Onions - Red",
+            "inStock":false,
+            "units":"68",
+            "unitPrice":"58",
+            "color":"Green"
+          },
+          {
+            "id":4,
+            "productId":"2451410442",
+            "productName":"Pasta - Fusili Tri - Coloured",
+            "inStock":true,
+            "units":"02",
+            "unitPrice":"24",
+            "color":"Crimson"
+          },
+          {
+            "id":5,
+            "productId":"4264251249",
+            "productName":"Bread - Crumbs, Bulk",
+            "inStock":true,
+            "units":"5",
+            "unitPrice":"59",
+            "color":"Maroon"
+          }];
+
+          let allowActivation = false;
+          const listView = document.querySelector('#custom_list');
+          listView.data = listData;
+
+          listView.addEventListener('beforeactivated', (e) => {
+            console.info('beforeactivated', e.detail);
+            if (!allowActivation) {
+              e.detail.response(false);
+            }
+            allowActivation = false;
           });
-        });
 
-        // Settings menu button - dynamic loading (WORKS when NOT in overflow)
-        const settingsPopupMenu = document.getElementById('settings-popup');
-        let toggleMenu = true;
-        settingsPopupMenu.beforeShow = (opts) => {
-          console.log('[Settings Menu] beforeShow called');
-          console.log('[Settings Menu] isSubmenu:', opts.isSubmenu);
-          console.log('[Settings Menu] contextElement:', opts.contextElement);
-
-          return new Promise((resolve) => {
-            console.log('[Settings Menu] Retrieving menu items from server...');
-
-            // Simulate server delay
-            setTimeout(() => {
-              settingsPopupMenu.innerHTML = '';
-              const menu = toggleMenu ? menuSet1 : menuSet2;
-              toggleMenu = !toggleMenu;
-
-              const menuGroup = document.createElement('ids-menu-group');
-              menu[0].items.forEach((item, idx) => {
-                const menuItem = document.createElement('ids-menu-item');
-                menuItem.id = `settings-item-${idx}`;
-                menuItem.value = item.value;
-                menuItem.textContent = item.text;
-                menuItem.addEventListener('click', () => {
-                  console.log(`Settings menu clicked: ${item.text}`);
-                });
-                menuGroup.appendChild(menuItem);
-              });
-              settingsPopupMenu.appendChild(menuGroup);
-
-              console.log('[Settings Menu] Menu items set, resolving Promise');
-              resolve();
-            }, 200);
+          listView.addEventListener('beforedeactivated', (e) => {
+            console.info('beforedeactivated', e.detail);
+            e.detail.response(false);
           });
-        };
 
-        // Dynamic menu button - FAILS when in overflow
-        const dynamicPopupMenu = document.getElementById('dynamic-popup');
-        let toggleDynamicMenu = true;
-        dynamicPopupMenu.beforeShow = (opts) => {
-          console.log('[Dynamic Menu] beforeShow called');
-          console.log('[Dynamic Menu] isSubmenu:', opts.isSubmenu);
-          console.log('[Dynamic Menu] contextElement:', opts.contextElement);
-
-          // Check if this is an overflow menu button
-          const isOverflowMenuItem =
-            opts.contextElement &&
-            opts.contextElement.originalParentElement &&
-            opts.contextElement.originalParentElement.overflowTarget;
-
-          console.log('[Dynamic Menu] isOverflowMenuItem:', isOverflowMenuItem);
-          console.log(
-            '[Dynamic Menu] overflowTarget:',
-            opts.contextElement?.originalParentElement?.overflowTarget
-          );
-
-          return new Promise((resolve) => {
-            console.log('[Dynamic Menu] Retrieving menu items from server...');
-
-            // Simulate server delay
-            setTimeout(() => {
-              dynamicPopupMenu.innerHTML = '';
-              const menu = toggleDynamicMenu ? menuSet1 : menuSet2;
-              toggleDynamicMenu = !toggleDynamicMenu;
-
-              const menuGroup = document.createElement('ids-menu-group');
-              menu[0].items.forEach((item, idx) => {
-                const menuItem = document.createElement('ids-menu-item');
-                menuItem.id = `dynamic-item-${idx}`;
-                menuItem.value = item.value;
-                menuItem.textContent = item.text;
-                menuItem.addEventListener('click', () => {
-                  console.log(`Dynamic menu clicked: ${item.text}`);
-                });
-                menuGroup.appendChild(menuItem);
-              });
-              dynamicPopupMenu.appendChild(menuGroup);
-
-              console.log('[Dynamic Menu] Menu items set, resolving Promise');
-
-              if (isOverflowMenuItem) {
-                console.log(
-                  '[Dynamic Menu] ⚠️ BUG: This is an overflow menu button.'
-                );
-                console.log(
-                  '[Dynamic Menu] ⚠️ Menu items loaded but menu will NOT open!'
-                );
+        listView.container?.addEventListener('click', (e) => {
+          if (e.target.classList.contains('action-btn')) {
+            const item = e.target.closest('ids-list-view-item');
+            if (item) {
+              const pageIndex = listView.items.indexOf(item);
+              const dataIndex = listView.dataIndex(pageIndex);
+              if (dataIndex !== null) {
+                if (e.target.id === 'close') {
+                  listView.suppressDeactivation = false;
+                  listView.deactivateItem(dataIndex);
+                  listView.suppressDeactivation = true;
+                } else {
+                  allowActivation = true;
+                  listView.activateItem(dataIndex);
+                }
               }
-
-              resolve();
-            }, 500);
-          });
-        };
-
-        // Log instructions
-        setTimeout(() => {
-          console.log('\n=== REPRODUCTION STEPS ===');
-          console.log(
-            '1. Resize window to make toolbar overflow (or it may already be overflowed)'
-          );
-          console.log(
-            '2. Click the overflow button (⋮) to see overflowed items'
-          );
-          console.log('3. Hover "Static Menu" - ✅ Works correctly');
-          console.log(
-            '4. Hover "Dynamic Menu" - ❌ Menu items load but menu does NOT open'
-          );
-          console.log(
-            '5. Compare with "Settings (Dynamic)" when NOT in overflow - ✅ Works correctly'
-          );
-          console.log('\n=== EXPECTED vs ACTUAL ===');
-          console.log(
-            'Expected: Dynamic menu should open after Promise resolves'
-          );
-          console.log(
-            'Actual: Menu items are loaded but menu remains closed when in overflow'
-          );
-          console.log('========================\n');
-        }, 1000);
+            }
+          }
+        });
       });
     </script>
   </body>
